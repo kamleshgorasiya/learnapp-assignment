@@ -1,0 +1,84 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<script>
+window.onload = function () {
+var dataPoints = [];
+var hammerDataPoints = [];
+function initialiseChart(id,dataPoints,title){
+	var options = {
+      chart: {
+        height: 350,
+        type: 'candlestick',
+      },
+      series: [{
+        data: dataPoints
+      }],
+      title: {
+        text: title,
+        align: 'left'
+      },
+      xaxis: {
+        type: 'datetime'
+      },
+      yaxis: {
+        tooltip: {
+          enabled: true
+        }
+      }
+    }
+	
+    var chart = new ApexCharts(
+      document.querySelector("#"+id),
+      options
+    );
+	return chart;
+}
+
+var hammerChart = initialiseChart("hammerChartContainer",hammerDataPoints,"Hammer Chart")
+var chart=initialiseChart("chartContainer",dataPoints,"Original data chart")
+
+$.get("http://localhost:3000/data/data.csv", function(data){
+	drawChart(data,chart,dataPoints);
+});
+$.get("http://localhost:3000/data/hammer.csv", function(data){
+	drawChart(data,hammerChart,hammerDataPoints);
+});
+
+function drawChart(csv,chart,dataPoints) {
+	console.log(csv);
+	var csvLines = points = [];
+	csvLines = csv.split(/[\r?\n|\r|\n]+/);
+	if(csvLines.length<2)
+	return;
+	for (var i = 1; i < csvLines.length; i++) {
+		if (csvLines[i].length > 0) {
+			points = csvLines[i].split(",");
+			dataPoints.push({
+				x: new Date(
+					parseInt(points[0].split("-")[0]),
+					parseInt(points[0].split("-")[1]),
+					parseInt(points[0].split("-")[2])
+				),
+				y: [
+					parseFloat(points[1]),
+					parseFloat(points[2]),
+					parseFloat(points[3]),
+					parseFloat(points[4])
+				]
+			});
+		}
+	}
+	chart.render();
+}
+
+}
+</script>
+</head>
+<body>
+<div id="chartContainer" style="height: 370px; width: 100%;"></div>
+<div id="hammerChartContainer" style="height: 370px; width: 100%;"></div>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script src="https://canvasjs.com/assets/script/jquery-1.11.1.min.js"></script>
+</body>
+</html>
